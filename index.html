@@ -303,11 +303,12 @@
     return m < 60 ? `${m} 分鐘` : `${Math.floor(m / 60)} 小時 ${m % 60} 分`;
   }
 
+  // 大數字顯示：60 秒內顯示「即將到站」，其餘顯示分鐘數
   function minutesValue(ms) {
     const s = Math.max(0, ms) / 1000;
-    if (s < 60) return { n: "NOW", soon: true };
+    if (s < 60) return { n: "即將", unit: "到站", soon: true };
     const m = Math.floor(s / 60);
-    return { n: String(m), soon: m <= 5 };
+    return { n: String(m), unit: "分鐘後", soon: m <= 5 };
   }
 
   function progress(ms) {
@@ -377,7 +378,7 @@
         </div>
         <div class="bignum ${v.soon ? "soon" : ""}">
           <span class="n">${v.n}</span>
-          <span class="unit">${v.n === "NOW" ? "" : "分鐘後"}</span>
+          <span class="unit">${v.unit}</span>
         </div>
         <div class="meta">
           <span class="at">${hhmm(first.at - st.offset)}</span>
@@ -437,7 +438,7 @@
     const bEl = document.getElementById("bar");
     const bigEl = cardEl.querySelector(".bignum");
     if (nEl) nEl.textContent = v.n;
-    if (uEl) uEl.textContent = v.n === "NOW" ? "" : "分鐘後";
+    if (uEl) uEl.textContent = v.unit;
     if (bigEl) bigEl.classList.toggle("soon", v.soon);
     if (bEl) bEl.style.width = progress(firstMs) + "%";
 
