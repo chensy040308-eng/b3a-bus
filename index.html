@@ -106,7 +106,8 @@
   .sign{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:5px}
   .sign b{color:#c8d6e6;font-weight:600;letter-spacing:.03em}
 
-  .bignum{display:flex;align-items:baseline;gap:9px;margin:2px 0 6px}
+  .bigrow{display:flex;align-items:flex-end;justify-content:space-between;gap:14px}
+  .bignum{display:flex;align-items:baseline;gap:9px;margin:0}
   .bignum .n{
     font-size:66px;line-height:.94;font-weight:750;letter-spacing:-.045em;
     font-variant-numeric:tabular-nums;
@@ -115,9 +116,21 @@
     transition:background .4s;
   }
   .bignum .unit{font-size:15px;font-weight:600;color:var(--muted);letter-spacing:.02em}
-  .bignum.soon .n{background:linear-gradient(150deg,#ffffff 0%,#b6ffe4 45%,#2ee6a8 100%);
-    -webkit-background-clip:text;background-clip:text}
+  .bignum.soon .n{animation:breathe 2.2s ease-in-out infinite}
   .bignum.dash .n{background:none;color:var(--muted);-webkit-text-fill-color:var(--muted)}
+
+  /* 右側預計到站鐘 */
+  .clock{text-align:right;flex:none;padding-bottom:12px}
+  .clock b{display:block;font-size:25px;font-weight:650;letter-spacing:-.015em;line-height:1.15;
+    font-variant-numeric:tabular-nums;color:#e8f1fa}
+  .clock small{display:block;margin-top:3px;font-size:10px;letter-spacing:.14em;color:#6f7f90}
+
+  /* 回程配色 */
+  .card[data-dir="I"] .bignum .n{
+    background:linear-gradient(150deg,#ffffff 0%,#b6ffe6 45%,#2ee6a8 100%);
+    -webkit-background-clip:text;background-clip:text}
+  .card[data-dir="I"] .tag.next{color:var(--green)}
+  @keyframes breathe{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25)}}
 
   .meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
   .meta .at{color:#cddbea;font-variant-numeric:tabular-nums;font-weight:600}
@@ -376,15 +389,15 @@
           <span class="tag next">下一班</span>
           <span class="sign">上車站 <b>${escapeHtml(conf.stopName)}</b></span>
         </div>
-        <div class="bignum ${v.soon ? "soon" : ""}">
-          <span class="n">${v.n}</span>
-          <span class="unit">${v.unit}</span>
-        </div>
-        <div class="meta">
-          <span class="at">${hhmm(first.at - st.offset)}</span>
-          <span>到站</span>
-          <span class="dot"></span>
-          <span>${escapeHtml(conf.from)} → ${escapeHtml(conf.to)}</span>
+        <div class="bigrow">
+          <div class="bignum ${v.soon ? "soon" : ""}">
+            <span class="n">${v.n}</span>
+            <span class="unit">${v.unit}</span>
+          </div>
+          <div class="clock">
+            <b>${hhmm(first.at - st.offset)}</b>
+            <small>預計到站</small>
+          </div>
         </div>
         ${first.rmk ? `<div class="note">${escapeHtml(first.rmk)}</div>` : ""}
         <div class="bar"><i id="bar" style="width:${progress(firstMs)}%"></i></div>
@@ -419,7 +432,7 @@
     tabEls.O.setAttribute("aria-selected", String(active === "O"));
     tabEls.I.setAttribute("aria-selected", String(active === "I"));
     const conf = DIRS[active];
-    document.getElementById("sub").textContent = `${conf.from} → ${conf.to} · 每 30 秒自動更新`;
+    document.getElementById("sub").textContent = "實時到站 · 每 30 秒自動更新";
     arrowEl.textContent = active === "O" ? "→" : "←";
     document.title = `B3A ${conf.from} → ${conf.to} · 實時到站`;
   }
