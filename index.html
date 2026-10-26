@@ -2,269 +2,486 @@
 <html lang="zh-HK">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>B3A 富泰邨 → 深圳灣口岸</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070b11">
+<meta name="description" content="城巴 B3A 富泰邨 ⇄ 深圳灣口岸 實時到站時間">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>B3A 富泰邨 ⇄ 深圳灣口岸 · 實時到站</title>
 <style>
   :root{
-    --bg:#0d1117;
-    --card:#161b22;
-    --line:#26303d;
-    --fg:#e6edf3;
-    --muted:#8b949e;
-    --accent:#00b0ff;
-    --accent2:#00e676;
-    --warn:#ffb300;
-    --err:#ff5252;
+    --bg:#070b11;
+    --fg:#eef4fb;
+    --muted:#8b9aad;
+    --line:rgba(255,255,255,.075);
+    --blue:#4ea8ff;
+    --cyan:#63e6ff;
+    --green:#2ee6a8;
+    --red:#ff6b6b;
+    --amber:#ffc857;
+    --r:24px;
   }
-  *{box-sizing:border-box}
-  html,body{height:100%}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;min-height:100%}
   body{
-    margin:0;
-    background:radial-gradient(1200px 600px at 50% -10%,#123049 0%,var(--bg) 60%);
+    background:var(--bg);
     color:var(--fg);
-    font:16px/1.45 -apple-system,"Segoe UI",Roboto,"PingFang HK","Microsoft JhengHei","Noto Sans TC",sans-serif;
+    font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang HK","Hiragino Sans TC","Microsoft JhengHei","Noto Sans TC",sans-serif;
+    -webkit-font-smoothing:antialiased;
     display:flex;
-    align-items:flex-start;
     justify-content:center;
-    padding:28px 16px 40px;
+    padding:calc(22px + env(safe-area-inset-top)) 16px calc(30px + env(safe-area-inset-bottom));
+    overflow-x:hidden;
   }
-  .wrap{width:100%;max-width:560px}
+  /* ambient background */
+  .glow{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .glow::before,.glow::after{content:"";position:absolute;border-radius:50%;filter:blur(70px);opacity:.5}
+  .glow::before{width:460px;height:460px;top:-190px;left:50%;margin-left:-230px;
+    background:radial-gradient(circle,#1d6fe0 0%,#0b3a7a 45%,transparent 70%)}
+  .glow::after{width:380px;height:380px;bottom:-200px;right:-120px;
+    background:radial-gradient(circle,#0d7a63 0%,#064a3c 45%,transparent 70%);opacity:.35}
+  .wrap{position:relative;z-index:1;width:100%;max-width:520px}
 
-  header{text-align:center;margin-bottom:18px}
-  .route{
-    display:inline-flex;align-items:center;gap:10px;
-    background:#1f6feb1a;border:1px solid #1f6feb55;
-    color:#8ecbff;border-radius:999px;
-    padding:6px 16px;font-weight:700;letter-spacing:.08em;font-size:15px;
+  /* header */
+  header{text-align:center;margin-bottom:20px}
+  .brandrow{display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:14px}
+  .chip{
+    font-weight:800;letter-spacing:.12em;font-size:13px;
+    padding:5px 11px;border-radius:9px;
+    color:#04121f;
+    background:linear-gradient(135deg,#8fd8ff,#4ea8ff);
+    box-shadow:0 6px 18px -6px #4ea8ffcc;
   }
-  h1{font-size:22px;margin:14px 0 4px;font-weight:650}
-  .sub{color:var(--muted);font-size:14px}
-  .arrow{color:var(--accent);padding:0 6px}
+  .brand{font-size:11.5px;letter-spacing:.22em;color:var(--muted);text-transform:uppercase}
+  .live{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;letter-spacing:.14em;
+    color:var(--green);border:1px solid rgba(46,230,168,.35);background:rgba(46,230,168,.09);
+    padding:3px 8px;border-radius:999px}
+  .live i{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.8)}}
 
+  h1{margin:0;font-size:23px;font-weight:700;letter-spacing:-.01em;
+    display:flex;align-items:center;justify-content:center;gap:10px}
+  h1 .arrow{font-size:19px;color:var(--blue);opacity:.85;font-weight:400;
+    transition:transform .5s cubic-bezier(.2,.8,.3,1)}
+  .sub{margin:7px 0 0;font-size:13px;color:var(--muted)}
+
+  /* tabs */
+  .tabs{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0;
+    background:rgba(255,255,255,.045);border:1px solid var(--line);
+    padding:4px;border-radius:16px;margin-bottom:14px}
+  .tabs .indicator{position:absolute;top:4px;left:4px;width:calc(50% - 4px);height:calc(100% - 8px);
+    border-radius:12px;background:linear-gradient(180deg,rgba(78,168,255,.28),rgba(78,168,255,.14));
+    border:1px solid rgba(78,168,255,.35);
+    box-shadow:0 6px 18px -8px #4ea8ffaa;
+    transition:transform .32s cubic-bezier(.22,.9,.3,1), background .32s, border-color .32s}
+  .tabs[data-active="I"] .indicator{transform:translateX(100%);
+    background:linear-gradient(180deg,rgba(46,230,168,.26),rgba(46,230,168,.12));
+    border-color:rgba(46,230,168,.35);box-shadow:0 6px 18px -8px #2ee6a8aa}
+  .tab{position:relative;z-index:1;appearance:none;border:0;background:none;color:var(--muted);
+    font:inherit;font-size:14px;font-weight:600;padding:9px 6px;border-radius:12px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    transition:color .25s}
+  .tab span{font-size:10.5px;font-weight:500;letter-spacing:.02em;opacity:.75}
+  .tab[aria-selected="true"]{color:#fff}
+  .tab:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+  /* card */
   .card{
-    background:var(--card);
+    position:relative;
+    background:linear-gradient(180deg,rgba(26,34,46,.92),rgba(14,19,26,.95));
     border:1px solid var(--line);
-    border-radius:16px;
-    padding:18px 18px 8px;
-    box-shadow:0 10px 30px #0006;
+    border-radius:var(--r);
+    box-shadow:0 30px 70px -32px #000, inset 0 1px 0 rgba(255,255,255,.06);
+    backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    overflow:hidden;
   }
+  .card::before{content:"";position:absolute;inset:0 0 auto;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(120,190,255,.5),transparent)}
 
-  ul{list-style:none;margin:0;padding:0}
-  li{
-    display:flex;align-items:baseline;gap:12px;
-    padding:14px 4px;
-    border-top:1px solid var(--line);
-  }
-  li:first-child{border-top:0;padding-top:6px}
-  .dot{
-    width:10px;height:10px;border-radius:50%;
-    background:var(--muted);flex:0 0 auto;
-    align-self:center;
-  }
-  li.live .dot{background:var(--accent2);box-shadow:0 0 0 4px #00e67622;animation:pulse 1.6s ease-in-out infinite}
-  @keyframes pulse{50%{box-shadow:0 0 0 8px #00e67600}}
+  /* hero */
+  .hero{padding:20px 20px 16px}
+  .hero .kick{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .tag{font-size:10.5px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+  .tag.next{color:var(--blue)}
+  .sign{font-size:10.5px;color:var(--muted);display:flex;align-items:center;gap:5px}
+  .sign b{color:#c8d6e6;font-weight:600;letter-spacing:.03em}
 
-  .min{
+  .bignum{display:flex;align-items:baseline;gap:9px;margin:2px 0 6px}
+  .bignum .n{
+    font-size:66px;line-height:.94;font-weight:750;letter-spacing:-.045em;
     font-variant-numeric:tabular-nums;
-    font-weight:750;
-    font-size:34px;
-    line-height:1;
-    min-width:2.2ch;
-    text-align:right;
-    margin-left:auto;
-    color:var(--accent);
+    background:linear-gradient(150deg,#ffffff 0%,#bfe3ff 45%,#5fb0ff 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    transition:background .4s;
   }
-  li.live .min{color:var(--accent2)}
-  .min small{font-size:14px;font-weight:600;color:var(--muted);margin-left:5px}
-  .min.soon{font-size:22px}
-  .min.none{color:var(--muted);font-size:20px;font-weight:600}
+  .bignum .unit{font-size:15px;font-weight:600;color:var(--muted);letter-spacing:.02em}
+  .bignum.soon .n{background:linear-gradient(150deg,#ffffff 0%,#b6ffe4 45%,#2ee6a8 100%);
+    -webkit-background-clip:text;background-clip:text}
+  .bignum.dash .n{background:none;color:var(--muted);-webkit-text-fill-color:var(--muted)}
 
-  .meta{font-size:13px;color:var(--muted)}
-  .meta b{color:#c9d1d9;font-weight:600}
-  .seq{font-size:12px;color:#6e7681;letter-spacing:.06em;text-transform:uppercase}
-  .rmk{color:var(--warn);font-size:13px}
+  .meta{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+  .meta .at{color:#cddbea;font-variant-numeric:tabular-nums;font-weight:600}
+  .dot{width:3px;height:3px;border-radius:50%;background:#41505f}
 
-  footer{
-    display:flex;align-items:center;justify-content:space-between;gap:10px;
-    margin-top:14px;font-size:12.5px;color:var(--muted);flex-wrap:wrap;
+  .bar{margin-top:14px;height:6px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden}
+  .bar>i{display:block;height:100%;border-radius:999px;width:0;
+    background:linear-gradient(90deg,#2e8bff,#63e6ff);
+    box-shadow:0 0 12px #4ea8ff88;
+    transition:width .9s cubic-bezier(.2,.8,.3,1), background .4s}
+  .card[data-dir="I"] .bar>i{background:linear-gradient(90deg,#12b981,#5cffcf);box-shadow:0 0 12px #2ee6a888}
+  .hero .note{margin-top:10px;font-size:12px;color:#7d8b9c}
+
+  /* list */
+  .rows{border-top:1px solid var(--line);padding:4px 8px 6px}
+  .row{display:flex;align-items:center;gap:12px;padding:12px 12px;border-radius:14px;
+    transition:background .2s}
+  .row+.row{border-top:1px solid rgba(255,255,255,.045)}
+  .row .idx{width:20px;height:20px;border-radius:7px;flex:none;
+    display:grid;place-items:center;font-size:10.5px;font-weight:700;color:#9fb3c8;
+    background:rgba(255,255,255,.06);font-variant-numeric:tabular-nums}
+  .row .when{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;color:#e6eef8}
+  .row .tail{margin-left:auto;font-size:13.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .row .tail b{color:#c4d4e4;font-weight:600}
+  .rows .none{padding:18px 12px 20px;text-align:center;color:var(--muted);font-size:13.5px}
+
+  /* footer inside card */
+  .foot{display:flex;align-items:center;gap:10px;padding:13px 18px 16px;border-top:1px solid var(--line);
+    font-size:12px;color:#75828f}
+  .foot .upd{font-variant-numeric:tabular-nums}
+  .btn{margin-left:auto;appearance:none;border:1px solid rgba(255,255,255,.14);
+    background:rgba(255,255,255,.06);color:#dbe6f2;font:inherit;font-size:12.5px;font-weight:600;
+    padding:7px 14px;border-radius:11px;cursor:pointer;transition:background .2s,transform .1s,border-color .2s}
+  .btn:hover{background:rgba(255,255,255,.11)}
+  .btn:active{transform:scale(.96)}
+  .btn[disabled]{opacity:.45;cursor:default}
+  .btn.spin::before{content:"";display:inline-block;width:10px;height:10px;margin-right:7px;
+    border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;
+    animation:spin .7s linear infinite;vertical-align:-1px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* states */
+  .banner{margin:0 18px 14px;padding:11px 13px;border-radius:12px;font-size:12.5px;line-height:1.5;
+    background:rgba(255,107,107,.1);border:1px solid rgba(255,107,107,.3);color:#ffc0c0}
+  .banner button{appearance:none;border:0;background:none;color:#fff;text-decoration:underline;
+    font:inherit;font-size:12.5px;cursor:pointer;padding:0}
+
+  .sk{padding:22px 20px}
+  .sk i{display:block;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,.05) 0%,rgba(255,255,255,.11) 50%,rgba(255,255,255,.05) 100%);
+    background-size:220% 100%;animation:shimmer 1.4s infinite}
+  .sk i:nth-child(1){width:80px;height:11px;margin-bottom:14px}
+  .sk i:nth-child(2){width:170px;height:52px;margin-bottom:12px}
+  .sk i:nth-child(3){width:120px;height:12px;margin-bottom:10px}
+  .sk i:nth-child(4){width:100%;height:6px;margin-bottom:26px}
+  .sk i:nth-child(5){width:100%;height:16px;margin-bottom:12px}
+  .sk i:nth-child(6){width:70%;height:16px}
+  @keyframes shimmer{0%{background-position:120% 0}100%{background-position:-120% 0}}
+
+  .enter{animation:fadeUp .34s cubic-bezier(.2,.8,.3,1) both}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  /* page footer */
+  .src{margin:16px 4px 0;text-align:center;font-size:11.5px;line-height:1.7;color:#5e6b7a}
+  .src b{color:#7f8ea0;font-weight:600}
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
   }
-  button{
-    background:#21262d;color:var(--fg);border:1px solid var(--line);
-    border-radius:9px;padding:7px 13px;font-size:13px;cursor:pointer;
-    font-family:inherit;
+  @media (max-width:360px){
+    .bignum .n{font-size:56px}
+    h1{font-size:20px}
   }
-  button:hover{background:#2b323b}
-  button:active{transform:translateY(1px)}
-
-  .status{margin-top:14px;font-size:13.5px;border-radius:10px;padding:11px 13px;display:none}
-  .status.show{display:block}
-  .status.err{background:#ff52521a;border:1px solid #ff525255;color:#ffb3b3}
-  .status.info{background:#ffb3001a;border:1px solid #ffb30055;color:#ffdb8a}
-  .footnote{margin-top:16px;text-align:center;font-size:12px;color:#5c6672;line-height:1.6}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="glow"></div>
 
+<main class="wrap">
   <header>
-    <div class="route">城巴 CITYBUS · B3A</div>
-    <h1>富泰邨 <span class="arrow">→</span> 深圳灣口岸</h1>
-    <div class="sub">富泰邨, 青山公路 · 往深圳灣口岸</div>
+    <div class="brandrow">
+      <span class="chip">B3A</span>
+      <span class="brand">城巴 Citybus</span>
+      <span class="live"><i></i>LIVE</span>
+    </div>
+    <h1>富泰邨 <span class="arrow" id="arrow">⇄</span> 深圳灣口岸</h1>
+    <p class="sub" id="sub">實時到站 · 每 30 秒自動更新</p>
   </header>
 
-  <div class="card">
-    <ul id="list"></ul>
-    <div id="status" class="status"></div>
-    <footer>
-      <span id="updated">載入中…</span>
-      <button id="refresh" type="button">立即更新</button>
-    </footer>
+  <div class="tabs" id="tabs" data-active="O" role="tablist" aria-label="行車方向">
+    <span class="indicator" aria-hidden="true"></span>
+    <button class="tab" data-dir="O" role="tab" aria-selected="true" id="tabO">
+      去程<span>富泰 → 深圳灣</span>
+    </button>
+    <button class="tab" data-dir="I" role="tab" aria-selected="false" id="tabI">
+      回程<span>深圳灣 → 富泰</span>
+    </button>
   </div>
 
-  <div class="footnote">
-    資料來源：DATA.GOV.HK 城巴實時到站數據 · 每 30 秒自動更新<br>
+  <section class="card" id="card" data-dir="O" aria-live="polite"></section>
+
+  <p class="src">
+    資料來源 <b>DATA.GOV.HK</b> 城巴實時到站數據 · 每 30 秒自動更新<br>
     到站時間為預計時間，實際班次以現場為準
-  </div>
-
-</div>
+  </p>
+</main>
 
 <script>
 (() => {
   "use strict";
 
-  // 城巴 (CTB) B3A 往深圳灣口岸方向，於「富泰邨, 青山公路」(003261) 的實時到站
-  const ROUTE   = "B3A";
-  const STOP_ID = "003261";
-  const DIR     = "O";                 // O = 往深圳灣口岸
-  const API     = `https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${STOP_ID}/${ROUTE}`;
-  const INTERVAL_MS = 30000;           // 每 30 秒重新抓取
+  const ROUTE = "B3A";
+  const API = id => `https://rt.data.gov.hk/v2/transport/citybus/eta/CTB/${id}/${ROUTE}`;
+  const REFRESH_MS = 30000;
+  const TICK_MS = 1000;
+  const MAX_ROWS = 4;          // 首班（大卡）以外，最多再列 3 班
+  const PROGRESS_WINDOW_MS = 1800000; // 30 分鐘內視為「接近中」
 
-  const listEl   = document.getElementById("list");
-  const statusEl = document.getElementById("status");
-  const updatedEl= document.getElementById("updated");
+  // 去程：富泰邨上車 → 深圳灣口岸     (stop 003261, dir O)
+  // 回程：深圳灣口岸上車 → 富泰邨     (stop 003208, dir I)
+  const DIRS = {
+    O: { stop: "003261", dir: "O", from: "富泰邨", to: "深圳灣口岸", stopName: "富泰邨, 青山公路" },
+    I: { stop: "003208", dir: "I", from: "深圳灣口岸", to: "富泰邨", stopName: "深圳灣口岸" }
+  };
 
-  let etas = [];          // [{ at: Date, seq: Number, rmk: String }]
-  let skewMs = 0;         // 伺服器時間 - 本機時間
-  let lastFetch = null;
-  let lastError = null;
+  const state = {
+    O: { etas: null, offset: 0, updated: null, error: null, loading: false },
+    I: { etas: null, offset: 0, updated: null, error: null, loading: false }
+  };
+  let active = "O";
+  let timer = null;
 
-  const now = () => Date.now() + skewMs;
+  const cardEl = document.getElementById("card");
+  const tabsEl = document.getElementById("tabs");
+  const tabEls = { O: document.getElementById("tabO"), I: document.getElementById("tabI") };
+  const arrowEl = document.getElementById("arrow");
 
-  function fmtTime(d){
-    if (!d) return "--:--";
-    const p = n => String(n).padStart(2, "0");
-    return `${p(d.getHours())}:${p(d.getMinutes())}`;
+  const serverNow = key => Date.now() + state[key].offset;
+  const pad = n => String(n).padStart(2, "0");
+  const hhmm = ms => { const d = new Date(ms); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+
+  function parseEtas(json, conf) {
+    const rows = (json.data || []).filter(r =>
+      r.co === "CTB" && r.route === ROUTE && r.stop === conf.stop &&
+      r.dir === conf.dir && r.eta
+    );
+    const seen = new Set();
+    const out = [];
+    rows.sort((a, b) => Date.parse(a.eta) - Date.parse(b.eta));
+    for (const r of rows) {
+      const t = Date.parse(r.eta);
+      if (!isFinite(t) || seen.has(t)) continue;
+      seen.add(t);
+      out.push({ at: t, rmk: r.rmk_tc || r.rmk_en || "" });
+    }
+    return out;
   }
 
-  function setStatus(kind, msg){
-    statusEl.className = "status show " + kind;
-    statusEl.textContent = msg;
-  }
-  function clearStatus(){
-    statusEl.className = "status";
-    statusEl.textContent = "";
+  async function load(key, { quiet = false } = {}) {
+    const conf = DIRS[key], st = state[key];
+    if (!quiet) { st.loading = true; if (active === key) render(); }
+    try {
+      const res = await fetch(API(conf.stop) + "?_=" + Date.now(), { cache: "no-store" });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const json = await res.json();
+      st.etas = parseEtas(json, conf);
+      st.offset = json.generated_timestamp ? Date.parse(json.generated_timestamp) - Date.now() : 0;
+      st.updated = Date.now();
+      st.error = null;
+    } catch (e) {
+      st.error = e && e.message ? e.message : String(e);
+      if (st.etas === null) st.etas = [];
+    } finally {
+      st.loading = false;
+      if (active === key) render();
+    }
   }
 
-  // 把一棵 ETA 記錄轉為「還有幾多分鐘」
-  function remainingMs(eta){
-    return eta.at.getTime() - now();
+  /* ---------- render ---------- */
+
+  function elapsedLabel(ms) {
+    const s = Math.max(0, ms) / 1000;
+    if (s < 60) return "即將到站";
+    const m = Math.floor(s / 60);
+    return m < 60 ? `${m} 分鐘` : `${Math.floor(m / 60)} 小時 ${m % 60} 分`;
   }
 
-  function renderList(){
-    const active = etas.filter(e => remainingMs(e) > -30000);   // 剛過站的仍顯示一會
+  function minutesValue(ms) {
+    const s = Math.max(0, ms) / 1000;
+    if (s < 60) return { n: "NOW", soon: true };
+    const m = Math.floor(s / 60);
+    return { n: String(m), soon: m <= 5 };
+  }
 
-    if (!active.length){
-      listEl.innerHTML =
-        `<li><span class="dot"></span>` +
-        `<span class="meta">暫時沒有預定班次</span>` +
-        `<span class="min none">—</span></li>`;
+  function progress(ms) {
+    const p = 1 - Math.min(Math.max(ms, 0), PROGRESS_WINDOW_MS) / PROGRESS_WINDOW_MS;
+    return Math.round(Math.max(0.03, p) * 100);
+  }
+
+  function render() {
+    const st = state[active], conf = DIRS[active];
+
+    // 錯誤提示（有舊資料時仍然顯示清單）
+    const banner = st.error
+      ? `<div class="banner">即時數據載入失敗（${escapeHtml(st.error)}）。
+           <button id="retry" type="button">重試</button></div>`
+      : "";
+
+    if (st.etas === null && (st.loading || !st.updated)) {
+      cardEl.dataset.dir = active;
+      cardEl.innerHTML = banner + `
+        <div class="sk">${"<i></i>".repeat(6)}</div>`;
+      const r = document.getElementById("retry");
+      if (r) r.onclick = () => load(active);
+      syncHeader();
       return;
     }
 
-    listEl.innerHTML = active.map((e, i) => {
-      const ms = remainingMs(e);
-      const min = Math.floor(ms / 60000);
-      const live = i === 0 && ms < 60000;
-      let num, unit = "";
-      if (ms < 60000){
-        num = "即將到站";
-        unit = "";
-      } else {
-        num = String(min);
-        unit = "分鐘";
-      }
-      const soon = typeof num === "string" && num.length > 3;
-      return `<li class="${live ? "live" : ""}">` +
-          `<span class="dot"></span>` +
-          `<span>` +
-            `<div class="meta"><b>${fmtTime(e.at)}</b> 到站</div>` +
-            `<div class="seq">第 ${e.seq} 班${i === 0 ? " · 下一班" : ""}</div>` +
-            (e.rmk ? `<div class="rmk">${e.rmk}</div>` : "") +
-          `</span>` +
-          `<span class="min ${soon ? "soon" : ""}">${num}${unit ? `<small>${unit}</small>` : ""}</span>` +
-        `</li>`;
-    }).join("");
-  }
+    const etas = st.etas || [];
 
-  function renderFooter(){
-    if (lastError){
-      updatedEl.textContent = "更新失敗 · " + fmtTime(new Date(lastFetch || Date.now()));
-    } else if (lastFetch){
-      updatedEl.textContent = "上次更新 " + fmtTime(new Date(lastFetch));
-    } else {
-      updatedEl.textContent = "載入中…";
+    if (!etas.length) {
+      cardEl.dataset.dir = active;
+      cardEl.innerHTML = banner + `
+        <div class="hero enter">
+          <div class="kick">
+            <span class="tag">下一班</span>
+            <span class="sign">上車站 <b>${escapeHtml(conf.stopName)}</b></span>
+          </div>
+          <div class="bignum dash"><span class="n">--</span><span class="unit">暫無班次</span></div>
+          <div class="meta">暫時沒有預定班次，請稍後再試</div>
+        </div>
+        ${footHtml(st)}`;
+      bindFoot();
+      syncHeader();
+      return;
     }
+
+    const first = etas[0];
+    const rest = etas.slice(1, MAX_ROWS);
+    const firstMs = first.at - serverNow(active);
+    const v = minutesValue(firstMs);
+
+    const rows = rest.length
+      ? `<div class="rows">${rest.map((e, i) => `
+          <div class="row" data-at="${e.at}">
+            <span class="idx">${i + 2}</span>
+            <span class="when">${hhmm(e.at - st.offset)}</span>
+            <span class="tail"><b class="js-min">${elapsedLabel(e.at - serverNow(active))}</b></span>
+          </div>`).join("")}
+        </div>`
+      : `<div class="rows"><div class="none">未有更多預定班次</div></div>`;
+
+    cardEl.dataset.dir = active;
+    cardEl.innerHTML = banner + `
+      <div class="hero enter">
+        <div class="kick">
+          <span class="tag next">下一班</span>
+          <span class="sign">上車站 <b>${escapeHtml(conf.stopName)}</b></span>
+        </div>
+        <div class="bignum ${v.soon ? "soon" : ""}">
+          <span class="n">${v.n}</span>
+          <span class="unit">${v.n === "NOW" ? "" : "分鐘後"}</span>
+        </div>
+        <div class="meta">
+          <span class="at">${hhmm(first.at - st.offset)}</span>
+          <span>到站</span>
+          <span class="dot"></span>
+          <span>${escapeHtml(conf.from)} → ${escapeHtml(conf.to)}</span>
+        </div>
+        ${first.rmk ? `<div class="note">${escapeHtml(first.rmk)}</div>` : ""}
+        <div class="bar"><i id="bar" style="width:${progress(firstMs)}%"></i></div>
+      </div>
+      ${rows}
+      ${footHtml(st)}`;
+
+    bindFoot();
+    syncHeader();
   }
 
-  async function load(){
-    try{
-      const res = await fetch(API + "?_=" + Date.now(), { cache: "no-store" });
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const payload = await res.json();
+  function footHtml(st) {
+    const upd = st.updated ? `更新 ${hhmm(st.updated)}` : "尚未更新";
+    return `<div class="foot">
+      <span class="upd">${upd}</span>
+      <button class="btn" id="refresh" type="button" ${st.loading ? "disabled" : ""}>${st.loading ? "" : "立即更新"}</button>
+    </div>`;
+  }
 
-      // 以伺服器時間校正本機時鐘
-      const serverTs = Date.parse(payload.generated_timestamp || "");
-      if (!Number.isNaN(serverTs)) skewMs = serverTs - Date.now();
-
-      const rows = Array.isArray(payload.data) ? payload.data : [];
-      etas = rows
-        .filter(r => r.co === "CTB" && r.route === ROUTE && r.stop === STOP_ID && r.dir === DIR && r.eta)
-        .map(r => ({
-          at : new Date(r.eta),
-          seq: r.eta_seq || 0,
-          rmk: r.rmk_tc || r.rmk_en || ""
-        }))
-        .filter(e => !Number.isNaN(e.at.getTime()))
-        .sort((a, b) => a.at - b.at);
-
-      lastFetch = Date.now();
-      lastError = null;
-
-      if (!etas.length){
-        setStatus("info", "城巴暫未提供下一班 B3A 的預計到站時間（可能已收車）。");
-      } else {
-        clearStatus();
-      }
-    }catch(err){
-      lastFetch = lastFetch || Date.now();
-      lastError = err;
-      setStatus("err", "無法取得實時數據：" + (err && err.message ? err.message : err) +
-                       "　請檢查網絡連線後按「立即更新」。");
+  function bindFoot() {
+    const btn = document.getElementById("refresh");
+    if (btn) {
+      btn.onclick = async () => { btn.classList.add("spin"); btn.disabled = true; await load(active); };
+      if (state[active].loading) btn.classList.add("spin");
     }
-    renderList();
-    renderFooter();
+    const retry = document.getElementById("retry");
+    if (retry) retry.onclick = () => load(active);
   }
 
-  document.getElementById("refresh").addEventListener("click", load);
+  function syncHeader() {
+    tabsEl.dataset.active = active;
+    tabEls.O.setAttribute("aria-selected", String(active === "O"));
+    tabEls.I.setAttribute("aria-selected", String(active === "I"));
+    const conf = DIRS[active];
+    document.getElementById("sub").textContent = `${conf.from} → ${conf.to} · 每 30 秒自動更新`;
+    arrowEl.textContent = active === "O" ? "→" : "←";
+    document.title = `B3A ${conf.from} → ${conf.to} · 實時到站`;
+  }
 
-  // 每秒重繪倒數，每 30 秒抓取新數據
-  renderList();
-  load();
-  setInterval(renderList, 1000);
-  setInterval(load, INTERVAL_MS);
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && Date.now() - (lastFetch || 0) > 5000) load();
+  /* ---------- live countdown ---------- */
+
+  function tick() {
+    const st = state[active];
+    const etas = st.etas || [];
+    if (!etas.length) return;
+
+    const firstMs = etas[0].at - serverNow(active);
+    const v = minutesValue(firstMs);
+    const nEl = cardEl.querySelector(".bignum .n");
+    const uEl = cardEl.querySelector(".bignum .unit");
+    const bEl = document.getElementById("bar");
+    const bigEl = cardEl.querySelector(".bignum");
+    if (nEl) nEl.textContent = v.n;
+    if (uEl) uEl.textContent = v.n === "NOW" ? "" : "分鐘後";
+    if (bigEl) bigEl.classList.toggle("soon", v.soon);
+    if (bEl) bEl.style.width = progress(firstMs) + "%";
+
+    cardEl.querySelectorAll(".row").forEach(row => {
+      const at = Number(row.dataset.at);
+      const el = row.querySelector(".js-min");
+      if (el && at) el.textContent = elapsedLabel(at - serverNow(active));
+    });
+  }
+
+  /* ---------- events ---------- */
+
+  function switchTo(dir) {
+    if (dir === active) return;
+    active = dir;
+    render();
+    const st = state[dir];
+    if (!st.updated || Date.now() - st.updated > REFRESH_MS) load(dir, { quiet: true });
+  }
+
+  tabsEl.addEventListener("click", e => {
+    const b = e.target.closest(".tab");
+    if (b) switchTo(b.dataset.dir);
   });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && state[active].updated &&
+        Date.now() - state[active].updated > REFRESH_MS) {
+      load(active, { quiet: true });
+    }
+  });
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  /* ---------- boot ---------- */
+
+  render();
+  Promise.all([load("O"), load("I")]);
+  timer = setInterval(tick, TICK_MS);
+  setInterval(() => {
+    if (document.visibilityState === "visible") load(active, { quiet: true });
+  }, REFRESH_MS);
 })();
 </script>
 </body>
